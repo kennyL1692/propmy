@@ -1,0 +1,1121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>PropMY — Malaysia's No.1 Property Portal</title>
+<script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:#F5F5F5;color:#111}
+select,input,button{font-family:inherit}
+:root{
+  --red:#CD1818;--red-dk:#A30000;--red-lt:#FFF0F0;
+  --border:#E5E7EB;--grey:#6B7280;
+  --shadow:0 2px 8px rgba(0,0,0,.09);
+  --shadow-lg:0 8px 24px rgba(0,0,0,.14);
+}
+
+/* ── Header ─────────────────────────────────────────────────── */
+.site-header{
+  background:#fff;border-bottom:1px solid var(--border);
+  position:sticky;top:0;z-index:300;height:60px;
+  display:flex;align-items:center;
+}
+.nav-btn{
+  font-size:14px;font-weight:500;color:#374151;background:none;
+  border:none;border-bottom:2.5px solid transparent;
+  cursor:pointer;padding:4px 0;line-height:52px;
+  transition:color .15s,border-color .15s;
+}
+.nav-btn:hover{color:var(--red)}
+.nav-btn.active{color:var(--red);border-bottom-color:var(--red)}
+
+/* ── Cards ──────────────────────────────────────────────────── */
+.prop-card{
+  background:#fff;border-radius:8px;border:1px solid var(--border);
+  overflow:hidden;display:flex;flex-direction:column;
+  transition:box-shadow .2s,transform .2s;cursor:pointer;
+}
+.prop-card:hover{box-shadow:var(--shadow-lg);transform:translateY(-3px)}
+.img-wrap{position:relative;height:196px;overflow:hidden;flex-shrink:0;background:#E5E7EB}
+.img-wrap img{width:100%;height:100%;object-fit:cover;transition:transform .35s;display:block}
+.prop-card:hover .img-wrap img{transform:scale(1.05)}
+.img-fallback{width:100%;height:100%;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px}
+
+/* ── Badges ─────────────────────────────────────────────────── */
+.badge{font-size:11px;font-weight:700;padding:3px 8px;border-radius:3px;letter-spacing:.3px}
+.badge-sale{background:var(--red);color:#fff}
+.badge-rent{background:#1D4ED8;color:#fff}
+.badge-dark{background:rgba(0,0,0,.6);color:#fff}
+
+/* ── Tags ───────────────────────────────────────────────────── */
+.tag{font-size:11px;padding:3px 8px;border-radius:3px;border:1px solid var(--border);color:var(--grey);background:#FAFAFA;white-space:nowrap}
+.tag-red{background:var(--red-lt);border-color:#FFCDD2;color:var(--red);font-weight:600}
+
+/* ── Buttons ────────────────────────────────────────────────── */
+.btn-red{background:var(--red);color:#fff;border:none;border-radius:5px;font-weight:700;cursor:pointer;transition:background .15s}
+.btn-red:hover{background:var(--red-dk)}
+.btn-outline{background:#fff;color:var(--red);border:1.5px solid var(--red);border-radius:5px;font-weight:600;cursor:pointer;transition:all .15s}
+.btn-outline:hover{background:var(--red-lt)}
+.btn-ghost{background:none;border:none;cursor:pointer;color:var(--grey);transition:color .15s;display:flex;align-items:center;gap:4px}
+.btn-ghost:hover{color:#111}
+
+/* ── Sidebar ────────────────────────────────────────────────── */
+.sb-section{border-bottom:1px solid var(--border);padding:14px 0}
+.sb-section:last-child{border-bottom:none}
+.sb-label{font-size:10px;font-weight:700;color:#9CA3AF;text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px;display:block}
+.sb-btn{display:block;width:100%;text-align:left;font-size:13px;padding:6px 10px;border-radius:5px;border:none;cursor:pointer;transition:all .1s;color:#4B5563;background:transparent}
+.sb-btn.on{background:var(--red-lt);color:var(--red);font-weight:700}
+.sb-btn:not(.on):hover{background:#F3F4F6}
+
+/* ── Search bar ─────────────────────────────────────────────── */
+.search-box{background:#fff;border-radius:8px;display:flex;align-items:stretch;overflow:hidden;box-shadow:0 16px 40px rgba(0,0,0,.3)}
+.sf{display:flex;align-items:center;gap:8px;padding:0 14px;min-width:0}
+.sf input,.sf select{border:none;outline:none;font-size:14px;color:#111;background:transparent;width:100%;padding:14px 0}
+.sf-div{width:1px;background:var(--border);flex-shrink:0;margin:10px 0}
+
+/* ── Pagination ─────────────────────────────────────────────── */
+.pg-btn{width:34px;height:34px;border-radius:5px;border:1px solid var(--border);background:#fff;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;color:#374151}
+.pg-btn.on{background:var(--red);border-color:var(--red);color:#fff}
+.pg-btn:not(.on):not(:disabled):hover{border-color:var(--red);color:var(--red)}
+.pg-btn:disabled{opacity:.35;cursor:not-allowed}
+
+/* ── Toast ──────────────────────────────────────────────────── */
+.toast{
+  position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(80px);
+  background:#1F2937;color:#fff;padding:10px 20px;border-radius:8px;
+  font-size:13px;font-weight:600;white-space:nowrap;z-index:9999;
+  transition:transform .3s,opacity .3s;opacity:0;pointer-events:none;
+}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+
+/* ── Modal ──────────────────────────────────────────────────── */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:500;display:flex;align-items:center;justify-content:center}
+.modal-box{background:#fff;border-radius:10px;padding:28px 32px;width:340px;max-width:90vw;box-shadow:0 20px 50px rgba(0,0,0,.25)}
+
+/* ── Misc ───────────────────────────────────────────────────── */
+.trunc{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.chip{font-size:11px;background:var(--red-lt);color:var(--red);padding:3px 9px;border-radius:3px;cursor:pointer;display:inline-flex;align-items:center;gap:4px;font-weight:600;border:none}
+.chip:hover{background:#FFD7D7}
+
+@media(max-width:900px){.sidebar-wrap{display:none!important}}
+@media(max-width:600px){
+  .stat-grid{grid-template-columns:repeat(2,1fr)!important}
+  .search-box{flex-direction:column}
+  .sf-div{width:100%;height:1px;margin:0 10px}
+}
+
+/* ── Mobile nav ─────────────────────────────────────────────── */
+.desktop-nav{display:flex;gap:20px}
+.hamburger{display:none;flex-direction:column;justify-content:center;gap:5px;
+  background:none;border:none;cursor:pointer;padding:6px;border-radius:5px}
+.hamburger span{display:block;width:22px;height:2px;background:#374151;border-radius:2px;transition:all .25s}
+.hamburger.open span:nth-child(1){transform:translateY(7px) rotate(45deg)}
+.hamburger.open span:nth-child(2){opacity:0;transform:scaleX(0)}
+.hamburger.open span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
+.mobile-menu{
+  display:none;position:fixed;top:60px;left:0;right:0;
+  background:#fff;border-bottom:1px solid var(--border);
+  z-index:299;box-shadow:0 8px 24px rgba(0,0,0,.12);
+  flex-direction:column;padding:8px 0;
+}
+.mobile-menu.open{display:flex}
+.mobile-menu-btn{
+  display:flex;align-items:center;gap:10px;
+  font-size:15px;font-weight:500;color:#374151;
+  background:none;border:none;cursor:pointer;
+  padding:12px 20px;text-align:left;width:100%;
+  transition:background .12s;
+}
+.mobile-menu-btn:hover,.mobile-menu-btn.active{background:var(--red-lt);color:var(--red)}
+.mobile-menu-divider{height:1px;background:var(--border);margin:6px 0}
+.header-right-desktop{display:flex;align-items:center;gap:8px}
+@media(max-width:768px){
+  .desktop-nav{display:none!important}
+  .hamburger{display:flex!important}
+  .header-right-desktop .btn-ghost:first-child{display:none}
+}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const {useState, useMemo, useEffect, useRef, useCallback} = React;
+
+/* ═══════════════════════════════════════════
+   DATA
+═══════════════════════════════════════════ */
+// Picsum IDs chosen for architectural/building look — always load guaranteed
+const PIC=(id)=>`https://picsum.photos/id/${id}/800/500`;
+const UNS=(id)=>`https://images.unsplash.com/photo-${id}?w=800&h=500&fit=crop&q=80`;
+
+const ALL = [
+  {id:1, name:"The Ritz Suites KLCC",          type:"Condominium",       sub:"High-Rise",  listing:"For Sale",
+   price:1850000,psf:1807,sqft:1024,beds:2,baths:2, loc:"KLCC, Kuala Lumpur",
+   tenure:"Freehold",  station:"KLCC LRT · 5 min walk",      furnished:"Fully Furnished",
+   tags:["Freehold","City View","Infinity Pool"],  badge:"Premium",
+   img:UNS("1486325212027-8081e485255e"),
+   agent:{name:"Priya Ramasamy", agency:"IQI Global",          init:"PR"}, yr:2018},
+
+  {id:2, name:"8 Kia Peng Residences",          type:"Serviced Residence",sub:"High-Rise",  listing:"For Sale",
+   price:2380000,psf:1535,sqft:1550,beds:3,baths:3, loc:"Bukit Bintang, KL",
+   tenure:"Freehold",  station:"Bukit Bintang LRT · 3 min",  furnished:"Partly Furnished",
+   tags:["Freehold","KLCC View","Newly Renovated"], badge:"Hot",
+   img:PIC(1029),
+   agent:{name:"Daniel Goh",    agency:"Hartamas Real Estate", init:"DG"}, yr:2019},
+
+  {id:3, name:"Solaris Dutamas Mont Kiara",     type:"Condominium",       sub:"Mid-Rise",   listing:"For Sale",
+   price:920000, psf:822, sqft:1119,beds:3,baths:2, loc:"Mont Kiara, KL",
+   tenure:"Freehold",  station:"Hartamas MRT · 8 min walk",  furnished:"Fully Furnished",
+   tags:["Freehold","Expat Community","Dual Key"],  badge:null,
+   img:UNS("1545324418-cc1a3fa10c00"),
+   agent:{name:"Michelle Yong", agency:"REN Realty",           init:"MY"}, yr:2015},
+
+  {id:4, name:"One Bangsar Signature Suite",    type:"Serviced Residence",sub:"High-Rise",  listing:"For Rent",
+   price:4500,   psf:null,sqft:850, beds:2,baths:1, loc:"Bangsar, KL",
+   tenure:"Freehold",  station:"Bangsar LRT · 5 min walk",   furnished:"Fully Furnished",
+   tags:["Fully Furnished","Pool View","Ready Now"], badge:"New",
+   img:PIC(1076),
+   agent:{name:"Amy Liew",      agency:"ERA Malaysia",         init:"AL"}, yr:2021},
+
+  {id:5, name:"Tropicana The Residences PJ",    type:"Condominium",       sub:"High-Rise",  listing:"For Sale",
+   price:688000, psf:695, sqft:990, beds:3,baths:2, loc:"Kota Damansara, Selangor",
+   tenure:"Leasehold", station:"Surian MRT · 6 min walk",    furnished:"Partly Furnished",
+   tags:["Below Market","Resort Facilities","Near Highway"], badge:"Hot",
+   img:UNS("1560448204-e02f11c3d0e2"),
+   agent:{name:"Kevin Tan",     agency:"PropNex Malaysia",     init:"KT"}, yr:2020},
+
+  {id:6, name:"Setia Eco Park Semi-D",          type:"Semi-Detached",     sub:"Landed",     listing:"For Sale",
+   price:2150000,psf:484, sqft:4440,beds:5,baths:4, loc:"Shah Alam, Selangor",
+   tenure:"Freehold",  station:"Setia Jaya KTM · 12 min",    furnished:"Unfurnished",
+   tags:["Freehold","Gated & Guarded","Eco Township"],badge:null,
+   img:UNS("1568605114967-8130f3a36994"),
+   agent:{name:"Raymond Loh",   agency:"Knight Frank MY",      init:"RL"}, yr:2017},
+
+  {id:7, name:"Damansara Heights Bungalow",     type:"Bungalow",          sub:"Landed",     listing:"For Sale",
+   price:8800000,psf:1600,sqft:5500,beds:6,baths:6, loc:"Damansara Heights, KL",
+   tenure:"Freehold",  station:"Semantan MRT · 8 min",        furnished:"Partly Furnished",
+   tags:["Freehold","Private Pool","GCB-Grade"],    badge:"Exclusive",
+   img:UNS("1613977257363-707ba9348227"),
+   agent:{name:"Chloe Ng",      agency:"CBRE WTW Malaysia",    init:"CN"}, yr:2016},
+
+  {id:8, name:"10 Mont Kiara Penthouse",        type:"Condominium",       sub:"Penthouse",  listing:"For Rent",
+   price:9800,   psf:null,sqft:3200,beds:5,baths:4, loc:"Mont Kiara, KL",
+   tenure:"Freehold",  station:"Hartamas MRT · 10 min walk",  furnished:"Fully Furnished",
+   tags:["Penthouse","360° View","Private Lift"],   badge:"Premium",
+   img:PIC(1048),
+   agent:{name:"Ivan Cheah",    agency:"IQI Global",           init:"IC"}, yr:2012},
+
+  {id:9, name:"The Penang Views Residency",     type:"Condominium",       sub:"High-Rise",  listing:"For Sale",
+   price:780000, psf:650, sqft:1200,beds:3,baths:2, loc:"Tanjung Tokong, Penang",
+   tenure:"Freehold",  station:"Georgetown Bus · 18 min",     furnished:"Partly Furnished",
+   tags:["Freehold","Sea View","Island Living"],    badge:null,
+   img:UNS("1580587771525-78b9dba3b914"),
+   agent:{name:"Susan Lim",     agency:"Reapfield Properties", init:"SL"}, yr:2019},
+
+  {id:10,name:"Medini Signature Iskandar",      type:"Condominium",       sub:"High-Rise",  listing:"For Sale",
+   price:450000, psf:469, sqft:960, beds:3,baths:2, loc:"Medini, Iskandar Puteri, Johor",
+   tenure:"Leasehold", station:"JB Sentral KTM · 25 min",    furnished:"Partly Furnished",
+   tags:["Near Singapore","Below Market","Investment Zone"],  badge:"Hot",
+   img:UNS("1600596542815-ffad4c1539a9"),
+   agent:{name:"James Ong",     agency:"PropNex Malaysia",     init:"JO"}, yr:2022},
+
+  {id:11,name:"Desa ParkCity Park View",        type:"Condominium",       sub:"Mid-Rise",   listing:"For Rent",
+   price:5200,   psf:null,sqft:1300,beds:3,baths:2, loc:"Desa ParkCity, KL",
+   tenure:"Freehold",  station:"Kepong Baru MRT · 7 min",    furnished:"Fully Furnished",
+   tags:["Fully Furnished","Lake View","Pet Friendly"],badge:"New",
+   img:UNS("1600585154340-be6161a56a0c"),
+   agent:{name:"Grace Tan",     agency:"VPC Alliance",         init:"GT"}, yr:2018},
+
+  {id:12,name:"Bukit Bintang SOHO Suite",       type:"SOHO",              sub:"High-Rise",  listing:"For Rent",
+   price:2800,   psf:null,sqft:650, beds:1,baths:1, loc:"Bukit Bintang, KL",
+   tenure:"Leasehold", station:"Bukit Bintang MRT · 2 min",  furnished:"Fully Furnished",
+   tags:["MRT Doorstep","Fully Furnished","Short-Term OK"],   badge:null,
+   img:PIC(1058),
+   agent:{name:"Bob Chen",      agency:"ERA Malaysia",         init:"BC"}, yr:2020},
+
+  {id:13,name:"Valencia @ Petaling Jaya",       type:"Terrace House",     sub:"2-Storey",   listing:"For Sale",
+   price:1350000,psf:614, sqft:2200,beds:4,baths:3, loc:"Damansara Perdana, PJ",
+   tenure:"Freehold",  station:"Asia Jaya LRT · 10 min",     furnished:"Partly Furnished",
+   tags:["Freehold","Corner Lot","Gated Guarded"],  badge:null,
+   img:UNS("1564013799919-ab600027ffc6"),
+   agent:{name:"Farah Aziz",    agency:"IQI Global",           init:"FA"}, yr:2014},
+
+  {id:14,name:"Subang Avenue Semi-D",           type:"Semi-Detached",     sub:"Landed",     listing:"For Rent",
+   price:6800,   psf:null,sqft:3200,beds:5,baths:4, loc:"Subang Jaya, Selangor",
+   tenure:"Freehold",  station:"Subang Jaya LRT · 5 min",    furnished:"Partly Furnished",
+   tags:["Freehold","Landed","Near Int'l School"],  badge:null,
+   img:UNS("1512917774080-9991f1c4c750"),
+   agent:{name:"Thomas Lee",    agency:"Hartamas Real Estate",  init:"TL"}, yr:2010},
+];
+
+const PROP_TYPES = ["Condominium","Serviced Residence","Apartment","Terrace House","Semi-Detached","Bungalow","SOHO","SOVO"];
+const TENURES = ["Freehold","Leasehold"];
+const FURNISHING = ["Fully Furnished","Partly Furnished","Unfurnished"];
+
+const SALE_RANGES = [
+  {label:"Any Price",min:0,max:Infinity},
+  {label:"Under RM 500K",min:0,max:500000},
+  {label:"RM 500K – RM 1M",min:500000,max:1000000},
+  {label:"RM 1M – RM 2M",min:1000000,max:2000000},
+  {label:"RM 2M – RM 5M",min:2000000,max:5000000},
+  {label:"Above RM 5M",min:5000000,max:Infinity},
+];
+const RENT_RANGES = [
+  {label:"Any Price",min:0,max:Infinity},
+  {label:"Below RM 2,000",min:0,max:2000},
+  {label:"RM 2,000 – RM 4,000",min:2000,max:4000},
+  {label:"RM 4,000 – RM 8,000",min:4000,max:8000},
+  {label:"Above RM 8,000",min:8000,max:Infinity},
+];
+
+const SORT_OPTS = ["Recommended","Price: Low to High","Price: High to Low","Newest First"];
+
+function fmtPrice(price, listing){
+  if(listing==="For Rent") return `RM ${price.toLocaleString()}/mo`;
+  if(price>=1000000) return `RM ${(price/1000000).toFixed(2).replace(/\.?0+$/,"")}M`;
+  return `RM ${price.toLocaleString()}`;
+}
+
+/* ═══════════════════════════════════════════
+   SVG ICONS
+═══════════════════════════════════════════ */
+const SVGS = {
+  Home:<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>,
+  Bldg:<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18"/><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/><path d="M10 6h4"/><path d="M10 10h4"/><path d="M10 14h4"/><path d="M10 18h4"/></svg>,
+  Search:<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>,
+  Pin:<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>,
+  Heart:<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>,
+  HeartF:<svg viewBox="0 0 24 24" fill="#CD1818" stroke="#CD1818" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>,
+  Bed:<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 4v16"/><path d="M2 8h18a2 2 0 0 1 2 2v10"/><path d="M2 17h20"/><path d="M6 8v9"/></svg>,
+  Bath:<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 6 6.5 3.5a1.5 1.5 0 0 0-1-.5C4.683 3 4 3.683 4 4.5V17a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-5"/><line x1="10" y1="5" x2="8" y2="7"/><line x1="2" y1="12" x2="22" y2="12"/></svg>,
+  SqFt:<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>,
+  Phone:<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.31 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>,
+  Chat:<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/></svg>,
+  Train:<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="4" y="3" width="16" height="16" rx="2"/><path d="M4 11h16M12 3v8"/><path d="m8 19-2 3m12-3 2 3M8 15h.01M16 15h.01"/></svg>,
+  X:<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>,
+  ChL:<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>,
+  ChR:<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6"/></svg>,
+  Filter:<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>,
+  Users:<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>,
+  Award:<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11"/></svg>,
+  Clock:<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>,
+  Check:<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>,
+  Lock:<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>,
+};
+
+function Ic({n,sz=16,col="currentColor",sty={}}){
+  return <span style={{display:"inline-flex",alignItems:"center",width:sz,height:sz,color:col,flexShrink:0,...sty}}>{SVGS[n]}</span>;
+}
+
+/* ═══════════════════════════════════════════
+   TOAST HOOK
+═══════════════════════════════════════════ */
+function useToast(){
+  const [msg,setMsg]=useState("");
+  const [vis,setVis]=useState(false);
+  const tid=useRef(null);
+  const show=useCallback((m)=>{
+    setMsg(m); setVis(true);
+    clearTimeout(tid.current);
+    tid.current=setTimeout(()=>setVis(false),2200);
+  },[]);
+  return {msg,vis,show};
+}
+
+/* ═══════════════════════════════════════════
+   SIGN-IN MODAL
+═══════════════════════════════════════════ */
+function SignInModal({onClose}){
+  const [email,setEmail]=useState("");
+  const [pw,setPw]=useState("");
+  const [done,setDone]=useState(false);
+  function submit(e){
+    e.preventDefault();
+    if(email&&pw){setDone(true);setTimeout(onClose,1200);}
+  }
+  return (
+    <div className="modal-bg" onClick={onClose}>
+      <div className="modal-box" onClick={e=>e.stopPropagation()}>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:20}}>
+          <div>
+            <span style={{fontWeight:900,fontSize:18,color:"#111"}}>Prop</span>
+            <span style={{fontWeight:900,fontSize:18,color:"var(--red)"}}>MY</span>
+            <div style={{fontSize:12,color:"var(--grey)"}}>Sign in to your account</div>
+          </div>
+          <button className="btn-ghost" onClick={onClose} style={{padding:4}}><Ic n="X" sz={18} col="#6B7280"/></button>
+        </div>
+        {done?(
+          <div style={{textAlign:"center",padding:"20px 0"}}>
+            <Ic n="Check" sz={40} col="#16A34A" sty={{margin:"0 auto 10px"}}/>
+            <div style={{fontWeight:700,color:"#16A34A"}}>Signed in successfully!</div>
+          </div>
+        ):(
+          <form onSubmit={submit}>
+            <div style={{marginBottom:14}}>
+              <label style={{fontSize:12,fontWeight:600,color:"#374151",display:"block",marginBottom:5}}>Email</label>
+              <input value={email} onChange={e=>setEmail(e.target.value)} type="email" required
+                placeholder="you@example.com"
+                style={{width:"100%",padding:"9px 12px",border:"1.5px solid var(--border)",borderRadius:6,fontSize:14,outline:"none"}}/>
+            </div>
+            <div style={{marginBottom:20}}>
+              <label style={{fontSize:12,fontWeight:600,color:"#374151",display:"block",marginBottom:5}}>Password</label>
+              <input value={pw} onChange={e=>setPw(e.target.value)} type="password" required
+                placeholder="••••••••"
+                style={{width:"100%",padding:"9px 12px",border:"1.5px solid var(--border)",borderRadius:6,fontSize:14,outline:"none"}}/>
+            </div>
+            <button type="submit" className="btn-red" style={{width:"100%",padding:"10px",fontSize:14,borderRadius:6}}>
+              Sign In
+            </button>
+            <div style={{textAlign:"center",marginTop:12,fontSize:12,color:"var(--grey)"}}>
+              Demo mode — any email & password works
+            </div>
+          </form>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════
+   FREE AD MODAL
+═══════════════════════════════════════════ */
+function FreeAdModal({onClose}){
+  const [step,setStep]=useState(1);
+  return (
+    <div className="modal-bg" onClick={onClose}>
+      <div className="modal-box" onClick={e=>e.stopPropagation()} style={{width:380}}>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:20}}>
+          <div style={{fontWeight:700,fontSize:16,color:"#111"}}>Post a Free Listing</div>
+          <button className="btn-ghost" onClick={onClose} style={{padding:4}}><Ic n="X" sz={18} col="#6B7280"/></button>
+        </div>
+        {step===1&&(
+          <div>
+            <p style={{fontSize:13,color:"var(--grey)",marginBottom:16}}>Choose your listing type:</p>
+            {[{l:"For Sale",d:"List your property for sale"},
+              {l:"For Rent",d:"List your property for rent"},
+              {l:"New Project",d:"Promote a new development"}].map(o=>(
+              <button key={o.l} onClick={()=>setStep(2)}
+                style={{display:"flex",alignItems:"center",gap:12,width:"100%",textAlign:"left",border:"1.5px solid var(--border)",borderRadius:7,padding:"12px 14px",marginBottom:8,background:"#fff",cursor:"pointer",transition:"all .15s"}}
+                onMouseEnter={e=>{e.currentTarget.style.borderColor="var(--red)";e.currentTarget.style.background="var(--red-lt)"}}
+                onMouseLeave={e=>{e.currentTarget.style.borderColor="var(--border)";e.currentTarget.style.background="#fff"}}>
+                <Ic n="Home" sz={18} col="var(--red)"/>
+                <div>
+                  <div style={{fontWeight:600,fontSize:13,color:"#111"}}>{o.l}</div>
+                  <div style={{fontSize:11,color:"var(--grey)"}}>{o.d}</div>
+                </div>
+              </button>
+            ))}
+          </div>
+        )}
+        {step===2&&(
+          <div style={{textAlign:"center",padding:"20px 0"}}>
+            <Ic n="Check" sz={44} col="#16A34A" sty={{margin:"0 auto 12px"}}/>
+            <div style={{fontWeight:700,fontSize:15,color:"#111",marginBottom:6}}>Listing submitted!</div>
+            <div style={{fontSize:12,color:"var(--grey)",marginBottom:20}}>Our team will review and publish within 24 hours.</div>
+            <button className="btn-red" onClick={onClose} style={{padding:"9px 24px",borderRadius:6,fontSize:14}}>Done</button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════
+   PROPERTY CARD
+═══════════════════════════════════════════ */
+const FALLBACK_BG={
+  "Condominium":"linear-gradient(135deg,#1e3a5f,#2d6a9f)",
+  "Serviced Residence":"linear-gradient(135deg,#2d1b69,#5a2d82)",
+  "Terrace House":"linear-gradient(135deg,#1a4a2e,#2d7a4a)",
+  "Semi-Detached":"linear-gradient(135deg,#4a1a2e,#82304a)",
+  "Bungalow":"linear-gradient(135deg,#3d2b00,#7a5500)",
+  "SOHO":"linear-gradient(135deg,#1a1a4a,#2d2d7a)",
+  "Apartment":"linear-gradient(135deg,#1e3a5f,#2d6a9f)",
+};
+
+function PropCard({p, saved, onSave, showToast}){
+  const [imgSrc,setImgSrc]=useState(p.img);
+  const [fallbackUsed,setFallbackUsed]=useState(false);
+  const [contacted,setContacted]=useState(false);
+
+  function handleImgError(){
+    if(!fallbackUsed){
+      // picsum.photos always returns a real photo — guaranteed fallback
+      setImgSrc(`https://picsum.photos/seed/propmy${p.id}/800/500`);
+      setFallbackUsed(true);
+    }
+  }
+
+  return (
+    <div className="prop-card">
+      {/* Photo — always shows a real image */}
+      <div className="img-wrap">
+        <img src={imgSrc} alt={p.name} onError={handleImgError} loading="lazy"/>
+
+        {/* Top-left: listing badge + label */}
+        <div style={{position:"absolute",top:10,left:10,display:"flex",gap:5,zIndex:2}}>
+          <span className={`badge ${p.listing==="For Sale"?"badge-sale":"badge-rent"}`}>{p.listing}</span>
+          {p.badge&&<span className="badge badge-dark">{p.badge}</span>}
+        </div>
+
+        {/* Top-right: heart */}
+        <button onClick={e=>{e.stopPropagation();onSave();showToast(saved?"Removed from saved":"Saved to favourites");}}
+          style={{position:"absolute",top:10,right:10,width:34,height:34,borderRadius:"50%",
+            background:"rgba(255,255,255,0.92)",border:"none",cursor:"pointer",
+            display:"flex",alignItems:"center",justifyContent:"center",zIndex:2,
+            boxShadow:"0 1px 4px rgba(0,0,0,.2)"}}>
+          <Ic n={saved?"HeartF":"Heart"} sz={16} col={saved?"#CD1818":"#9CA3AF"}/>
+        </button>
+
+        {/* Bottom overlays */}
+        <div style={{position:"absolute",bottom:10,left:10,zIndex:2}}>
+          <span style={{fontSize:10,background:"rgba(0,0,0,.55)",color:"#fff",padding:"2px 7px",borderRadius:3,fontWeight:600}}>{p.furnished}</span>
+        </div>
+        <div style={{position:"absolute",bottom:10,right:10,zIndex:2}}>
+          <span style={{fontSize:10,background:"rgba(0,0,0,.55)",color:"#fff",padding:"2px 7px",borderRadius:3,fontWeight:600}}>{p.tenure}</span>
+        </div>
+      </div>
+
+      {/* Body */}
+      <div style={{padding:"12px 14px",display:"flex",flexDirection:"column",flex:1}}>
+        {/* Type sub-label */}
+        <div style={{fontSize:10,fontWeight:700,color:"#9CA3AF",textTransform:"uppercase",letterSpacing:".06em",marginBottom:3}}>
+          {p.type} · {p.sub}
+        </div>
+
+        {/* Name */}
+        <div className="trunc" title={p.name} style={{fontSize:14,fontWeight:700,color:"#111",marginBottom:4}}>{p.name}</div>
+
+        {/* Price */}
+        <div style={{fontSize:21,fontWeight:800,color:"var(--red)",lineHeight:1.1,marginBottom:2}}>
+          {fmtPrice(p.price,p.listing)}
+        </div>
+        <div style={{fontSize:11,color:"#6B7280",marginBottom:7}}>
+          {p.psf?`RM ${p.psf.toLocaleString()} psf · ${p.sqft.toLocaleString()} sq ft`:`${p.sqft.toLocaleString()} sq ft · ${p.tenure}`}
+        </div>
+
+        {/* Tags */}
+        <div style={{display:"flex",flexWrap:"wrap",gap:4,marginBottom:8}}>
+          {p.tags.slice(0,2).map(t=>(
+            <span key={t} className={`tag${t==="Freehold"?" tag-red":""}`}>{t}</span>
+          ))}
+        </div>
+
+        {/* Location */}
+        <div style={{display:"flex",alignItems:"center",gap:4,fontSize:12,color:"#6B7280",marginBottom:8}}>
+          <Ic n="Pin" sz={12} col="var(--red)"/>
+          <span className="trunc">{p.loc}</span>
+        </div>
+
+        {/* Specs */}
+        <div style={{display:"flex",gap:14,fontSize:12,color:"#374151",borderTop:"1px solid #F3F4F6",paddingTop:8,marginBottom:8}}>
+          <span style={{display:"flex",alignItems:"center",gap:4}}><Ic n="Bed" sz={13} col="#9CA3AF"/>{p.beds}</span>
+          <span style={{display:"flex",alignItems:"center",gap:4}}><Ic n="Bath" sz={13} col="#9CA3AF"/>{p.baths}</span>
+          <span style={{display:"flex",alignItems:"center",gap:4}}><Ic n="SqFt" sz={13} col="#9CA3AF"/>{p.sqft.toLocaleString()} sq ft</span>
+        </div>
+
+        {/* Station */}
+        <div style={{display:"flex",alignItems:"center",gap:5,fontSize:11,color:"#6B7280",marginBottom:10}}>
+          <Ic n="Train" sz={11} col="#16A34A"/>{p.station}
+        </div>
+
+        {/* Agent row */}
+        <div style={{borderTop:"1px solid #F3F4F6",paddingTop:10,display:"flex",alignItems:"center",justifyContent:"space-between",marginTop:"auto"}}>
+          <div style={{display:"flex",alignItems:"center",gap:8,minWidth:0}}>
+            <div style={{width:30,height:30,borderRadius:"50%",background:"linear-gradient(135deg,#CD1818,#8B0000)",display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",fontSize:11,fontWeight:700,flexShrink:0}}>
+              {p.agent.init}
+            </div>
+            <div style={{minWidth:0}}>
+              <div className="trunc" style={{fontSize:11,fontWeight:600,color:"#111",lineHeight:1.3}}>{p.agent.name}</div>
+              <div className="trunc" style={{fontSize:10,color:"#9CA3AF"}}>{p.agent.agency}</div>
+            </div>
+          </div>
+          <div style={{display:"flex",gap:6,flexShrink:0}}>
+            <button onClick={e=>{e.stopPropagation();showToast(`Calling ${p.agent.name}…`);}}
+              className="btn-outline" style={{width:30,height:30,borderRadius:"50%",padding:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
+              <Ic n="Phone" sz={13} col="var(--red)"/>
+            </button>
+            <button onClick={e=>{e.stopPropagation();setContacted(v=>!v);showToast(contacted?"Enquiry cancelled":"Enquiry sent to agent!");}}
+              className="btn-red" style={{height:30,padding:"0 12px",borderRadius:5,fontSize:11,fontWeight:700,display:"flex",alignItems:"center",gap:4,
+                background:contacted?"#15803D":"var(--red)"}}>
+              <Ic n={contacted?"Check":"Chat"} sz={12} col="#fff"/>
+              {contacted?"Sent!":"Contact"}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════
+   SIDEBAR — standalone (outside App!)
+═══════════════════════════════════════════ */
+function Sidebar({ranges,priceIdx,setPriceIdx,selTypes,toggleType,selBeds,setSelBeds,selTenure,setSelTenure,selFurnished,setSelFurnished,activeCount,clearAll,setPage}){
+  return (
+    <div style={{background:"#fff",borderRadius:8,border:"1px solid var(--border)",overflow:"hidden"}}>
+      {/* Header */}
+      <div style={{padding:"12px 16px",borderBottom:"1px solid var(--border)",display:"flex",alignItems:"center",justifyContent:"space-between",background:"#FAFAFA"}}>
+        <span style={{fontWeight:700,fontSize:13,color:"#111",display:"flex",alignItems:"center",gap:6}}>
+          <Ic n="Filter" sz={13} col="var(--red)"/>Filters
+          {activeCount>0&&(
+            <span style={{background:"var(--red)",color:"#fff",fontSize:10,width:18,height:18,borderRadius:"50%",display:"inline-flex",alignItems:"center",justifyContent:"center",fontWeight:800}}>
+              {activeCount}
+            </span>
+          )}
+        </span>
+        {activeCount>0&&(
+          <button onClick={clearAll} style={{fontSize:11,color:"var(--red)",background:"none",border:"none",cursor:"pointer",fontWeight:600}}>
+            Clear all
+          </button>
+        )}
+      </div>
+
+      <div style={{padding:"0 14px"}}>
+        {/* Price Range */}
+        <div className="sb-section">
+          <span className="sb-label">Price Range</span>
+          {ranges.map((r,i)=>(
+            <button key={i} className={`sb-btn${priceIdx===i?" on":""}`}
+              onClick={()=>{setPriceIdx(i);setPage(1);}}>
+              {r.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Property Type */}
+        <div className="sb-section">
+          <span className="sb-label">Property Type</span>
+          {PROP_TYPES.map(t=>(
+            <label key={t} style={{display:"flex",alignItems:"center",gap:8,marginBottom:8,cursor:"pointer"}}>
+              <input type="checkbox" checked={selTypes.includes(t)} onChange={()=>toggleType(t)}
+                style={{width:14,height:14,accentColor:"var(--red)",cursor:"pointer"}}/>
+              <span style={{fontSize:13,color:"#374151"}}>{t}</span>
+            </label>
+          ))}
+        </div>
+
+        {/* Bedrooms */}
+        <div className="sb-section">
+          <span className="sb-label">Bedrooms (min)</span>
+          <div style={{display:"flex",gap:4}}>
+            {[null,1,2,3,4,5].map(n=>(
+              <button key={String(n)}
+                onClick={()=>{setSelBeds(n);setPage(1);}}
+                style={{flex:1,fontSize:12,padding:"6px 0",borderRadius:5,cursor:"pointer",fontWeight:600,
+                  border:selBeds===n?"1.5px solid var(--red)":"1px solid var(--border)",
+                  background:selBeds===n?"var(--red)":"#fff",
+                  color:selBeds===n?"#fff":"#4B5563"}}>
+                {n===null?"Any":n===5?"5+":n}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Tenure */}
+        <div className="sb-section">
+          <span className="sb-label">Tenure</span>
+          <div style={{display:"flex",gap:6}}>
+            {TENURES.map(t=>(
+              <button key={t}
+                onClick={()=>{setSelTenure(selTenure===t?null:t);setPage(1);}}
+                style={{flex:1,fontSize:12,padding:"7px 0",borderRadius:5,cursor:"pointer",
+                  fontWeight:selTenure===t?700:400,
+                  border:selTenure===t?"1.5px solid var(--red)":"1px solid var(--border)",
+                  background:selTenure===t?"var(--red-lt)":"#fff",
+                  color:selTenure===t?"var(--red)":"#4B5563"}}>
+                {t}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Furnishing */}
+        <div className="sb-section">
+          <span className="sb-label">Furnishing</span>
+          {FURNISHING.map(f=>(
+            <button key={f} className={`sb-btn${selFurnished===f?" on":""}`}
+              onClick={()=>{setSelFurnished(selFurnished===f?null:f);setPage(1);}}>
+              {f}
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════
+   APP
+═══════════════════════════════════════════ */
+function App(){
+  const [tab,setTab]     = useState("Buy");
+  const [query,setQuery] = useState("");
+  const [priceIdx,setPriceIdx] = useState(0);
+  const [selTypes,setSelTypes] = useState([]);
+  const [selBeds,setSelBeds]   = useState(null);
+  const [selTenure,setSelTenure]     = useState(null);
+  const [selFurnished,setSelFurnished] = useState(null);
+  const [saved,setSaved] = useState(new Set([1,7]));
+  const [page,setPage]   = useState(1);
+  const [sort,setSort]   = useState(SORT_OPTS[0]);
+  const [showSignIn,setShowSignIn] = useState(false);
+  const [showFreeAd,setShowFreeAd] = useState(false);
+  const [mobileOpen,setMobileOpen] = useState(false);
+  const toast = useToast();
+  const PER_PAGE = 6;
+
+  const isRent = tab==="Rent";
+  const ranges = isRent ? RENT_RANGES : SALE_RANGES;
+
+  function switchTab(t){setTab(t);setPage(1);setPriceIdx(0);setMobileOpen(false);}
+
+  const filtered = useMemo(()=>{
+    let list = ALL.filter(p=>{
+      if(tab==="Rent") return p.listing==="For Rent";
+      if(tab==="New Projects") return p.listing==="For Sale" && p.yr>=2021;
+      return p.listing==="For Sale";
+    });
+    if(query.trim()){
+      const q=query.toLowerCase().trim();
+      list=list.filter(p=>
+        p.name.toLowerCase().includes(q)||
+        p.loc.toLowerCase().includes(q)||
+        p.type.toLowerCase().includes(q)||
+        p.agent.agency.toLowerCase().includes(q)
+      );
+    }
+    if(selTypes.length) list=list.filter(p=>selTypes.includes(p.type));
+    if(selBeds!==null)  list=list.filter(p=>p.beds>=selBeds);
+    if(selTenure)       list=list.filter(p=>p.tenure===selTenure);
+    if(selFurnished)    list=list.filter(p=>p.furnished===selFurnished);
+    const r=ranges[priceIdx];
+    list=list.filter(p=>p.price>=r.min&&p.price<=r.max);
+    if(sort===SORT_OPTS[1]) list=[...list].sort((a,b)=>a.price-b.price);
+    if(sort===SORT_OPTS[2]) list=[...list].sort((a,b)=>b.price-a.price);
+    if(sort===SORT_OPTS[3]) list=[...list].sort((a,b)=>b.yr-a.yr);
+    return list;
+  },[tab,query,selTypes,selBeds,selTenure,selFurnished,priceIdx,sort,ranges]);
+
+  const totalPages=Math.max(1,Math.ceil(filtered.length/PER_PAGE));
+  const paged=filtered.slice((page-1)*PER_PAGE,page*PER_PAGE);
+
+  function toggleType(t){setSelTypes(p=>p.includes(t)?p.filter(x=>x!==t):[...p,t]);setPage(1);}
+  function toggleSaved(id){setSaved(p=>{const s=new Set(p);s.has(id)?s.delete(id):s.add(id);return s;});}
+  function clearAll(){setSelTypes([]);setSelBeds(null);setSelTenure(null);setSelFurnished(null);setPriceIdx(0);setQuery("");setPage(1);}
+
+  const activeCount=selTypes.length+(selBeds!==null?1:0)+(selTenure?1:0)+(selFurnished?1:0)+(priceIdx>0?1:0);
+
+  // Quick search pills — mapped to actual words in the data
+  const QUICK=[
+    {label:"Mont Kiara Condo",q:"Mont Kiara"},
+    {label:"KLCC Freehold",q:"KLCC"},
+    {label:"Penang Sea View",q:"Penang"},
+    {label:"Bangsar Rent",q:"Bangsar"},
+    {label:"Iskandar Johor",q:"Iskandar"},
+    {label:"Damansara",q:"Damansara"},
+  ];
+
+  return (
+    <div>
+      {/* ── Toast ─────────────────────────────────────────────── */}
+      <div className={`toast${toast.vis?" show":""}`}>{toast.msg}</div>
+
+      {/* ── Modals ────────────────────────────────────────────── */}
+      {showSignIn&&<SignInModal onClose={()=>setShowSignIn(false)}/>}
+      {showFreeAd&&<FreeAdModal onClose={()=>setShowFreeAd(false)}/>}
+
+      {/* ════════════════════════════════════════════
+          HEADER
+      ════════════════════════════════════════════ */}
+      <div className="site-header">
+        <div style={{maxWidth:1280,margin:"0 auto",padding:"0 16px",display:"flex",alignItems:"center",justifyContent:"space-between",width:"100%"}}>
+
+          {/* Logo */}
+          <div style={{display:"flex",alignItems:"center",gap:28}}>
+            <div style={{display:"flex",alignItems:"center",gap:7,flexShrink:0}}>
+              <div style={{width:34,height:34,borderRadius:8,background:"linear-gradient(135deg,#CD1818,#8B0000)",display:"flex",alignItems:"center",justifyContent:"center"}}>
+                <Ic n="Home" sz={17} col="#fff"/>
+              </div>
+              <div style={{lineHeight:1}}>
+                <div>
+                  <span style={{fontSize:17,fontWeight:900,color:"#111",letterSpacing:"-0.5px"}}>Prop</span>
+                  <span style={{fontSize:17,fontWeight:900,color:"var(--red)",letterSpacing:"-0.5px"}}>MY</span>
+                </div>
+                <div style={{fontSize:8,color:"#9CA3AF",letterSpacing:".5px"}}>PROPERTY PORTAL</div>
+              </div>
+            </div>
+
+            {/* Desktop nav — hidden on mobile via CSS */}
+            <nav className="desktop-nav">
+              {["Buy","Rent","New Projects","Commercial","Agents"].map(item=>(
+                <button key={item} className={`nav-btn${tab===item?" active":""}`}
+                  style={{whiteSpace:"nowrap"}}
+                  onClick={()=>["Buy","Rent","New Projects","Commercial"].includes(item)&&switchTab(item)}>
+                  {item}
+                </button>
+              ))}
+            </nav>
+          </div>
+
+          {/* Right actions */}
+          <div className="header-right-desktop">
+            <button className="btn-ghost" style={{fontSize:13,padding:"6px 10px",borderRadius:5}}>
+              <Ic n="HeartF" sz={14} col="var(--red)"/>
+              <span>Saved ({saved.size})</span>
+            </button>
+            <button className="btn-ghost" style={{fontSize:13,padding:"6px 10px"}}
+              onClick={()=>{setShowSignIn(true);setMobileOpen(false);}}>
+              Sign In
+            </button>
+            <button className="btn-red" style={{fontSize:13,padding:"7px 14px",borderRadius:5}}
+              onClick={()=>{setShowFreeAd(true);setMobileOpen(false);}}>
+              Free Ad
+            </button>
+
+            {/* Hamburger — visible on mobile via CSS */}
+            <button className={`hamburger${mobileOpen?" open":""}`}
+              onClick={()=>setMobileOpen(v=>!v)}
+              aria-label="Menu">
+              <span/><span/><span/>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Mobile slide-down menu */}
+      <div className={`mobile-menu${mobileOpen?" open":""}`}>
+        {["Buy","Rent","New Projects","Commercial","Agents"].map(item=>(
+          <button key={item} className={`mobile-menu-btn${tab===item?" active":""}`}
+            onClick={()=>["Buy","Rent","New Projects","Commercial"].includes(item)
+              ? switchTab(item) : setMobileOpen(false)}>
+            <Ic n={item==="Buy"?"Home":item==="Rent"?"Bldg":item==="Agents"?"Users":"Search"} sz={16} col={tab===item?"var(--red)":"#9CA3AF"}/>
+            {item}
+            {tab===item&&<span style={{marginLeft:"auto",width:7,height:7,borderRadius:"50%",background:"var(--red)",flexShrink:0}}/>}
+          </button>
+        ))}
+        <div className="mobile-menu-divider"/>
+        <div style={{display:"flex",gap:8,padding:"8px 16px"}}>
+          <button className="btn-outline" style={{flex:1,padding:"9px",fontSize:13,borderRadius:6}}
+            onClick={()=>{setShowSignIn(true);setMobileOpen(false);}}>
+            Sign In
+          </button>
+          <button className="btn-red" style={{flex:1,padding:"9px",fontSize:13,borderRadius:6}}
+            onClick={()=>{setShowFreeAd(true);setMobileOpen(false);}}>
+            Free Ad
+          </button>
+        </div>
+      </div>
+
+      {/* ════════════════════════════════════════════
+          HERO
+      ════════════════════════════════════════════ */}
+      <div style={{background:"linear-gradient(160deg,#1A0000 0%,#3D0000 45%,#2D0A0A 100%)",padding:"44px 16px 36px"}}>
+        <div style={{maxWidth:1100,margin:"0 auto"}}>
+          <div style={{textAlign:"center",marginBottom:24}}>
+            <div style={{fontSize:11,fontWeight:700,color:"rgba(255,255,255,0.45)",textTransform:"uppercase",letterSpacing:".12em",marginBottom:10}}>
+              🇲🇾 Malaysia's No.1 Property Portal
+            </div>
+            <h1 style={{fontSize:36,fontWeight:900,color:"#fff",letterSpacing:"-1px",lineHeight:1.1,margin:"0 0 8px"}}>
+              Find Your Perfect Property<br/>
+              <span style={{color:"#FF7070"}}>Anywhere in Malaysia</span>
+            </h1>
+            <p style={{color:"rgba(255,255,255,0.5)",fontSize:14}}>Condominiums · Landed Homes · Commercial · New Projects</p>
+          </div>
+
+          {/* Tab switcher */}
+          <div style={{display:"flex",justifyContent:"center",marginBottom:14}}>
+            <div style={{background:"rgba(255,255,255,0.08)",borderRadius:8,padding:4,display:"inline-flex",gap:2}}>
+              {["Buy","Rent","New Projects"].map(t=>(
+                <button key={t} onClick={()=>switchTab(t)}
+                  style={{fontSize:13,fontWeight:700,padding:"7px 22px",borderRadius:6,border:"none",cursor:"pointer",transition:"all .15s",
+                    background:tab===t?"#fff":"transparent",
+                    color:tab===t?"var(--red)":"rgba(255,255,255,0.7)"}}>
+                  {t}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Search box */}
+          <div className="search-box" style={{maxWidth:900,margin:"0 auto"}}>
+            <div className="sf" style={{flex:2,minWidth:220}}>
+              <Ic n="Pin" sz={18} col="var(--red)"/>
+              <input value={query} onChange={e=>{setQuery(e.target.value);setPage(1);}}
+                placeholder="Search by location, project or property type…"/>
+              {query&&(
+                <button onClick={()=>{setQuery("");setPage(1);}}
+                  style={{background:"none",border:"none",cursor:"pointer",display:"flex",flexShrink:0,padding:2}}>
+                  <Ic n="X" sz={14} col="#9CA3AF"/>
+                </button>
+              )}
+            </div>
+            <div className="sf-div"/>
+            <div className="sf" style={{minWidth:170}}>
+              <Ic n="Bldg" sz={15} col="#9CA3AF"/>
+              <select onChange={e=>{if(e.target.value){toggleType(e.target.value);e.target.value="";}}} defaultValue="">
+                <option value="">Property Type</option>
+                {PROP_TYPES.map(t=><option key={t} value={t}>{t}</option>)}
+              </select>
+            </div>
+            <div className="sf-div"/>
+            <div className="sf" style={{minWidth:185}}>
+              <Ic n="Home" sz={15} col="#9CA3AF"/>
+              <select value={priceIdx} onChange={e=>{setPriceIdx(Number(e.target.value));setPage(1);}}>
+                {ranges.map((r,i)=><option key={i} value={i}>{r.label}</option>)}
+              </select>
+            </div>
+            <button className="btn-red"
+              style={{padding:"0 28px",fontSize:14,borderRadius:0,display:"flex",alignItems:"center",gap:7,flexShrink:0,borderTopRightRadius:8,borderBottomRightRadius:8}}>
+              <Ic n="Search" sz={16} col="#fff"/>Search
+            </button>
+          </div>
+
+          {/* Quick search pills */}
+          <div style={{display:"flex",justifyContent:"center",gap:8,marginTop:14,flexWrap:"wrap"}}>
+            {QUICK.map(s=>(
+              <button key={s.label} onClick={()=>{setQuery(s.q);setPage(1);switchTab("Buy");}}
+                style={{fontSize:11,padding:"4px 13px",borderRadius:999,background:"rgba(255,255,255,0.1)",
+                  color:"rgba(255,255,255,0.75)",border:"1px solid rgba(255,255,255,0.18)",cursor:"pointer",fontWeight:500,transition:"all .15s"}}
+                onMouseEnter={e=>{e.currentTarget.style.background="rgba(255,255,255,0.18)"}}
+                onMouseLeave={e=>{e.currentTarget.style.background="rgba(255,255,255,0.1)"}}>
+                {s.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* ════════════════════════════════════════════
+          STATS BAR
+      ════════════════════════════════════════════ */}
+      <div style={{background:"var(--red)",padding:"10px 20px"}}>
+        <div style={{maxWidth:1280,margin:"0 auto"}}>
+          <div className="stat-grid" style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:8}}>
+            {[
+              {ic:"Bldg",n:"38,291",lb:"Active Listings"},
+              {ic:"Users",n:"6,847",lb:"Verified Agents"},
+              {ic:"Award",n:"96%",lb:"Satisfaction Rate"},
+              {ic:"Clock",n:"16 Yrs",lb:"Market Leader"},
+            ].map((s,i)=>(
+              <div key={i} style={{display:"flex",alignItems:"center",gap:10,padding:"6px 0"}}>
+                <div style={{width:34,height:34,borderRadius:6,background:"rgba(255,255,255,0.15)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+                  <Ic n={s.ic} sz={16} col="#fff"/>
+                </div>
+                <div>
+                  <div style={{fontWeight:800,fontSize:17,color:"#fff",lineHeight:1}}>{s.n}</div>
+                  <div style={{fontSize:10,color:"rgba(255,255,255,0.78)"}}>{s.lb}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* ════════════════════════════════════════════
+          MAIN — Sidebar + Grid
+      ════════════════════════════════════════════ */}
+      <div style={{maxWidth:1280,margin:"0 auto",padding:"24px 20px",display:"flex",gap:22}}>
+
+        {/* Sidebar */}
+        <aside className="sidebar-wrap" style={{width:242,flexShrink:0}}>
+          <div style={{position:"sticky",top:72}}>
+            <Sidebar
+              ranges={ranges} priceIdx={priceIdx} setPriceIdx={setPriceIdx}
+              selTypes={selTypes} toggleType={toggleType}
+              selBeds={selBeds} setSelBeds={setSelBeds}
+              selTenure={selTenure} setSelTenure={setSelTenure}
+              selFurnished={selFurnished} setSelFurnished={setSelFurnished}
+              activeCount={activeCount} clearAll={clearAll} setPage={setPage}
+            />
+          </div>
+        </aside>
+
+        {/* Listings */}
+        <div style={{flex:1,minWidth:0}}>
+
+          {/* Toolbar */}
+          <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",marginBottom:16,flexWrap:"wrap",gap:10}}>
+            <div>
+              <h2 style={{fontWeight:700,fontSize:16,color:"#111",margin:0}}>
+                {filtered.length} {tab==="New Projects"?"New Projects":tab==="Rent"?"Rentals":"Properties"} in Malaysia
+              </h2>
+              <div style={{fontSize:12,color:"#6B7280",marginTop:2}}>
+                {activeCount>0&&<span style={{color:"var(--red)",fontWeight:600}}>Filters active · </span>}
+                Showing {paged.length} of {filtered.length} listings
+              </div>
+            </div>
+
+            <div style={{display:"flex",gap:8,alignItems:"center",flexWrap:"wrap"}}>
+              {/* Active chips */}
+              {selTypes.map(t=>(
+                <button key={t} className="chip" onClick={()=>toggleType(t)}>
+                  {t}<Ic n="X" sz={9} col="var(--red)"/>
+                </button>
+              ))}
+              {selBeds!==null&&(
+                <button className="chip" onClick={()=>{setSelBeds(null);setPage(1);}}>
+                  {selBeds}+ Beds<Ic n="X" sz={9} col="var(--red)"/>
+                </button>
+              )}
+              {selTenure&&(
+                <button className="chip" onClick={()=>{setSelTenure(null);setPage(1);}}>
+                  {selTenure}<Ic n="X" sz={9} col="var(--red)"/>
+                </button>
+              )}
+
+              {/* Sort */}
+              <div style={{display:"flex",alignItems:"center",gap:6,border:"1px solid var(--border)",borderRadius:6,padding:"6px 12px",background:"#fff"}}>
+                <span style={{fontSize:10,color:"#9CA3AF",fontWeight:700,letterSpacing:".04em",flexShrink:0}}>SORT</span>
+                <select value={sort} onChange={e=>{setSort(e.target.value);setPage(1);}}
+                  style={{fontSize:13,color:"#111",background:"transparent",border:"none",outline:"none",cursor:"pointer",fontWeight:500}}>
+                  {SORT_OPTS.map(s=><option key={s} value={s}>{s}</option>)}
+                </select>
+              </div>
+            </div>
+          </div>
+
+          {/* Empty state */}
+          {filtered.length===0?(
+            <div style={{textAlign:"center",padding:"80px 20px",background:"#fff",borderRadius:8,border:"1px solid var(--border)"}}>
+              <div style={{display:"flex",justifyContent:"center",marginBottom:14}}>
+                <Ic n="Bldg" sz={52} col="#D1D5DB"/>
+              </div>
+              <div style={{fontWeight:700,fontSize:16,color:"#374151",marginBottom:6}}>No listings found</div>
+              <div style={{fontSize:13,color:"#6B7280",marginBottom:20}}>Try a different search or clear your filters</div>
+              <button onClick={clearAll} className="btn-red" style={{padding:"9px 24px",borderRadius:6,fontSize:14}}>
+                Clear All Filters
+              </button>
+            </div>
+          ):(
+            <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(285px,1fr))",gap:16}}>
+              {paged.map(p=>(
+                <PropCard key={p.id} p={p}
+                  saved={saved.has(p.id)}
+                  onSave={()=>toggleSaved(p.id)}
+                  showToast={toast.show}/>
+              ))}
+            </div>
+          )}
+
+          {/* Pagination */}
+          {totalPages>1&&(
+            <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:6,marginTop:32}}>
+              <button className="pg-btn" disabled={page===1} onClick={()=>setPage(p=>Math.max(1,p-1))}>
+                <Ic n="ChL" sz={14}/>
+              </button>
+              {Array.from({length:totalPages},(_,i)=>i+1).map(n=>(
+                <button key={n} className={`pg-btn${page===n?" on":""}`} onClick={()=>setPage(n)}>{n}</button>
+              ))}
+              <button className="pg-btn" disabled={page===totalPages} onClick={()=>setPage(p=>Math.min(totalPages,p+1))}>
+                <Ic n="ChR" sz={14}/>
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* ════════════════════════════════════════════
+          POPULAR SEARCHES
+      ════════════════════════════════════════════ */}
+      <div style={{background:"#fff",borderTop:"1px solid var(--border)",padding:"20px"}}>
+        <div style={{maxWidth:1280,margin:"0 auto"}}>
+          <div style={{fontWeight:700,fontSize:14,color:"#111",marginBottom:12}}>Popular Searches in Malaysia</div>
+          <div style={{display:"flex",flexWrap:"wrap",gap:8}}>
+            {[
+              {label:"Condo for Sale in KLCC",q:"KLCC",tab:"Buy"},
+              {label:"Mont Kiara Rental",q:"Mont Kiara",tab:"Rent"},
+              {label:"Petaling Jaya Terrace",q:"Petaling",tab:"Buy"},
+              {label:"Penang Sea View Condo",q:"Penang",tab:"Buy"},
+              {label:"Bangsar Furnished Suite",q:"Bangsar",tab:"Rent"},
+              {label:"Johor Iskandar Invest",q:"Iskandar",tab:"Buy"},
+              {label:"Damansara Heights Bungalow",q:"Damansara",tab:"Buy"},
+              {label:"Desa ParkCity Lake View",q:"ParkCity",tab:"Rent"},
+            ].map(s=>(
+              <button key={s.label}
+                onClick={()=>{setQuery(s.q);switchTab(s.tab);}}
+                style={{fontSize:12,padding:"5px 14px",borderRadius:4,border:"1px solid var(--border)",background:"#FAFAFA",color:"#374151",cursor:"pointer",fontWeight:500,transition:"all .15s"}}
+                onMouseEnter={e=>{e.currentTarget.style.borderColor="var(--red)";e.currentTarget.style.color="var(--red)";}}
+                onMouseLeave={e=>{e.currentTarget.style.borderColor="var(--border)";e.currentTarget.style.color="#374151";}}>
+                🔍 {s.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* ════════════════════════════════════════════
+          FOOTER
+      ════════════════════════════════════════════ */}
+      <footer style={{background:"#1A0000",color:"#9CA3AF",padding:"40px 20px 24px"}}>
+        <div style={{maxWidth:1280,margin:"0 auto"}}>
+          <div style={{display:"flex",justifyContent:"space-between",flexWrap:"wrap",gap:32,marginBottom:32}}>
+            <div style={{maxWidth:280}}>
+              <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:12}}>
+                <div style={{width:32,height:32,borderRadius:7,background:"var(--red)",display:"flex",alignItems:"center",justifyContent:"center"}}>
+                  <Ic n="Home" sz={15} col="#fff"/>
+                </div>
+                <span style={{color:"#fff",fontWeight:900,fontSize:17}}>Prop<span style={{color:"#FF7070"}}>MY</span></span>
+              </div>
+              <p style={{fontSize:12,lineHeight:1.7,marginBottom:14}}>Malaysia's most trusted property portal for buying, selling and renting residential and commercial properties nationwide.</p>
+              <div style={{display:"flex",gap:8}}>
+                {["App Store","Google Play"].map(s=>(
+                  <button key={s}
+                    style={{fontSize:11,padding:"5px 12px",borderRadius:5,border:"1px solid #3D0000",background:"transparent",color:"#6B7280",cursor:"pointer"}}
+                    onClick={()=>toast.show(`${s} — coming soon!`)}>
+                    {s}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div style={{display:"flex",gap:44,flexWrap:"wrap"}}>
+              {[
+                ["For Seekers","Buy Property","Rent Property","New Projects","Commercial","Insights"],
+                ["For Agents","List Property","Agent Login","Agent Directory","PropMY Academy"],
+                ["Resources","Property Guide","Mortgage Calc","Market Report","Area Insights"],
+                ["Company","About Us","Careers","Press Room","Contact Us","Advertise"],
+              ].map(([title,...links])=>(
+                <div key={title}>
+                  <div style={{color:"#fff",fontWeight:700,fontSize:11,marginBottom:10,textTransform:"uppercase",letterSpacing:".05em"}}>{title}</div>
+                  {links.map(l=>(
+                    <div key={l} onClick={()=>toast.show(`${l} — coming soon!`)}
+                      style={{fontSize:12,marginBottom:7,color:"#6B7280",cursor:"pointer",transition:"color .15s"}}
+                      onMouseEnter={e=>e.currentTarget.style.color="#FF7070"}
+                      onMouseLeave={e=>e.currentTarget.style.color="#6B7280"}>
+                      {l}
+                    </div>
+                  ))}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div style={{borderTop:"1px solid #2D0000",paddingTop:16,display:"flex",justifyContent:"space-between",flexWrap:"wrap",gap:10,fontSize:11}}>
+            <span>© 2024 PropMY Sdn Bhd · All rights reserved · SSM: 202401234567</span>
+            <span style={{display:"flex",gap:16}}>
+              {["Privacy Policy","Terms of Use","Cookie Policy"].map(l=>(
+                <span key={l} onClick={()=>toast.show(`${l} — coming soon!`)}
+                  style={{cursor:"pointer",color:"#6B7280"}}
+                  onMouseEnter={e=>e.currentTarget.style.color="#FF7070"}
+                  onMouseLeave={e=>e.currentTarget.style.color="#6B7280"}>{l}</span>
+              ))}
+            </span>
+          </div>
+          <div style={{marginTop:8,fontSize:10,color:"#3D0000",fontWeight:600}}>
+            ⚠ DEMO ONLY — All listings are fictional. Not a real property portal.
+          </div>
+        </div>
+      </footer>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+</script>
+</body>
+</html>
